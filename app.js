@@ -137,7 +137,10 @@ class Game {
       </div>`);
   }
 
+  populateFightingCharcters() {}
+
   populateDefendingCharacter() {
+    $("#yourChar").empty();
     $("#defender").empty();
     $("#defender")
       .append(`<div class='col-md-3' style='border: 1px solid black;'>
@@ -150,6 +153,12 @@ class Game {
       <p class="justify-content-center d-flex">${this.characters[
         this.defendingCharacter
       ].health.toString()}</p>
+      </div>`);
+    $("#fightSection")
+      .append(`<div class='col-md-3' style='border: 1px solid black;'>
+      <p class="justify-content-center d-flex">${this.activeCharacter.name.toString()}</p>
+      <img src='${this.activeCharacter.charImage.toString()}' class='img-fluid'>
+      <p class="justify-content-center d-flex">${this.activeCharacter.health.toString()}</p>
       </div>`);
   }
 
