@@ -137,8 +137,6 @@ class Game {
       </div>`);
   }
 
-  populateFightingCharcters() {}
-
   populateDefendingCharacter() {
     $("#yourChar").empty();
     $("#defender").empty();
