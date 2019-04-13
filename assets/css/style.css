@@ -1,0 +1,13 @@
+html,
+body {
+    padding: 0px;
+    margin: 0px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#characters {
+    border: 1px solid black;
+}
