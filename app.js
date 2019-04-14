@@ -71,41 +71,54 @@ class Game {
   setActiveCharacter(characterKey) {
     if (this.activeCharacter === null) {
       this.activeCharacter = this.characters[characterKey];
-      this.activeCharacterBasePower = this.characters[characterKey].attackPower;
+      this.activeCharacterBasePower = this.activeCharacter.attackPower;
     }
   }
 
   // for each character that is not the active character add the character to opposingCharacters
   setOpposingCharacters() {
+    this.opposingCharacters = [];
     for (var character in this.characters) {
       if (this.characters[character] !== this.activeCharacter)
         this.opposingCharacters.push(character);
     }
   }
 
-  // set the characters key to true
   setDefendingCharacter(characterKey) {
     if (this.defendingCharacter === null) {
-      this.defendingCharacter = characterKey;
+      this.defendingCharacter = this.characters[characterKey];
+      this.defendingCharacterKey = characterKey;
     }
   }
 
   setDefeatedCharacter() {
-    for (var character in this.characters) {
-      if (this.activeCharacter.health === 0) {
-        console.log("you lose");
-      } else if (
-        character.health === 0 &&
-        !this.activeCharacter &&
-        this.opposingCharacters !== []
-      ) {
-        var removeCharacter = this.opposingCharacters.findIndex(character.key);
-        this.opposingCharacters.splice(removeCharacter, 1);
-        this.defendingCharacter === null;
-      } else {
-        console.log("you win");
-      }
+    //for (var character in this.characters) {
+    if (this.activeCharacter.health <= 0) {
+      console.log("you lose");
+      initiateGame();
+      $("#opposition").empty();
+    } else if (
+      this.defendingCharacter.health <= 0 &&
+      this.opposingCharacters !== []
+    ) {
+      console.log("else if 2 is firing");
+      console.log(this.defendingCharacterKey);
+      var remove = this.opposingCharacters.indexOf(this.defendingCharacterKey);
+      this.opposingCharacters.splice(remove, 1);
+      console.log(this.opposingCharacters);
+      this.defendingCharacter = null;
+      this.defendingCharacterKey = null;
+      this.populateDefendingCharacter();
+      console.log(this.defendingCharacter);
+      this.populateOpposingCharactersList();
+    } else if (
+      this.defendingCharacter.health === 0 &&
+      this.opposingCharacters === []
+    ) {
+      console.log("you win");
+      initiateGame();
     }
+    //}
   }
 
   populateCharacterList() {
@@ -113,7 +126,7 @@ class Game {
     for (var character in this.characters) {
       if (this.activeCharacter !== this.characters[character]) {
         $("#availableChar")
-          .append(`<div class='col-md-3' style='border: 1px solid black; margin-right:10px;'>
+          .append(`<div class='col-md-3 character-selection' style='border: 1px solid black; margin-right:10px;' id='${character}'>
       <p class="justify-content-center d-flex">${this.characters[
         character
       ].name.toString()}</p>
@@ -130,7 +143,7 @@ class Game {
 
   populateActiveCharacterList() {
     $("#yourChar")
-      .append(`<div class='col-md-3' style='border: 1px solid black;'>
+      .append(`<div class='col-md-3' style='border: 1px solid black; padding-top: 10px;'>
       <p class="justify-content-center d-flex">${this.activeCharacter.name.toString()}</p>
       <img src='${this.activeCharacter.charImage.toString()}' class='img-fluid'>
       <p class="justify-content-center d-flex">${this.activeCharacter.health.toString()}</p>
@@ -139,24 +152,21 @@ class Game {
 
   populateDefendingCharacter() {
     $("#yourChar").empty();
+    $("#fightSection").empty();
     $("#defender").empty();
-    $("#defender")
-      .append(`<div class='col-md-3' style='border: 1px solid black;'>
-      <p class="justify-content-center d-flex">${this.characters[
-        this.defendingCharacter
-      ].name.toString()}</p>
-      <img src='${this.characters[
-        this.defendingCharacter
-      ].charImage.toString()}' class='img-fluid'>
-      <p class="justify-content-center d-flex">${this.characters[
-        this.defendingCharacter
-      ].health.toString()}</p>
-      </div>`);
     $("#fightSection")
-      .append(`<div class='col-md-3' style='border: 1px solid black;'>
+      .append(`<div class='col-md-3' style='border: 1px solid black; padding-top: 10px;' id='${this.activeCharacter.name.toString()}'>
       <p class="justify-content-center d-flex">${this.activeCharacter.name.toString()}</p>
       <img src='${this.activeCharacter.charImage.toString()}' class='img-fluid'>
       <p class="justify-content-center d-flex">${this.activeCharacter.health.toString()}</p>
+      </div>`);
+    $("#defender")
+      .append(`<div class='col-md-3 defender-character' style='border: 1px solid black; padding-top: 10px;' id='${
+      this.defendingCharacter.name
+    }'>
+      <p class="justify-content-center d-flex">${this.defendingCharacter.name.toString()}</p>
+      <img src='${this.defendingCharacter.charImage.toString()}' class='img-fluid'>
+      <p class="justify-content-center d-flex">${this.defendingCharacter.health.toString()}</p>
       </div>`);
   }
 
@@ -164,9 +174,11 @@ class Game {
     $("#availableChar").empty();
     $("#opposition").empty();
     for (var opposition in this.opposingCharacters) {
-      if (this.defendingCharacter !== this.opposingCharacters[opposition]) {
+      if (this.defendingCharacterKey !== this.opposingCharacters[opposition]) {
         $("#opposition")
-          .append(`<div class='col-md-3' style='border: 1px solid black; margin-right:10px;'>
+          .append(`<div class='col-md-3 defender-selection' style='border: 1px solid black; margin-right:10px; padding-top: 10px;' id='${
+          this.opposingCharacters[opposition]
+        }'>
       <p class="justify-content-center d-flex">${this.characters[
         this.opposingCharacters[opposition]
       ].name.toString()}</p>
@@ -183,10 +195,14 @@ class Game {
 
   attack() {
     this.defendingCharacter.health -= this.activeCharacter.attackPower;
+    this.setDefeatedCharacter();
+    this.upgradePower();
+    console.log(this.defendingCharacter.health);
   }
 
   counterAttack() {
     this.activeCharacter.health -= this.defendingCharacter.counterPower;
+    this.setDefeatedCharacter();
   }
 
   upgradePower() {
@@ -196,10 +212,43 @@ class Game {
   }
 }
 
-$(document).ready(function() {
-  const myGame = new Game(ALL_CHARACTERS);
+function initiateGame() {
+  window.myGame = new Game(ALL_CHARACTERS);
   myGame.populateCharacterList();
-  myGame.setActiveCharacter("obiwan");
+  $(".character-selection").click(function(event) {
+    console.log(event);
+    myGame.setActiveCharacter(event.currentTarget.id);
+    myGame.populateActiveCharacterList();
+    myGame.setOpposingCharacters();
+    myGame.populateOpposingCharactersList();
+
+    $(".defender-selection").click(function(event) {
+      console.log(event);
+      myGame.setDefendingCharacter(event.currentTarget.id);
+      myGame.populateDefendingCharacter();
+      myGame.populateOpposingCharactersList();
+      myGame.setOpposingCharacters();
+    });
+  });
+
+  $("#attack").click(function() {
+    myGame.attack();
+    myGame.counterAttack();
+    myGame.populateDefendingCharacter();
+    $(".defender-selection").click(function(event) {
+      console.log(event);
+      myGame.setDefendingCharacter(event.currentTarget.id);
+      myGame.populateDefendingCharacter();
+      myGame.populateOpposingCharactersList();
+    });
+  });
+}
+
+$(document).ready(function() {
+  window.myGame = new Game(ALL_CHARACTERS);
+  initiateGame();
+
+  /*   myGame.setActiveCharacter("obiwan");
   myGame.populateCharacterList();
   myGame.populateActiveCharacterList();
   myGame.setOpposingCharacters();
@@ -207,7 +256,7 @@ $(document).ready(function() {
   myGame.upgradePower();
   myGame.setDefendingCharacter("maul");
   myGame.populateDefendingCharacter();
-  myGame.populateOpposingCharactersList();
+  myGame.populateOpposingCharactersList(); */
   console.log(myGame.opposingCharacters);
   console.log(myGame.activeCharacter);
   console.log(myGame);
