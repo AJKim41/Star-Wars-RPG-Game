@@ -91,23 +91,26 @@ class Game {
     if (this.activeCharacter.health <= 0) {
       initiateGame();
       $("#opposition").empty();
-      alert("You Lose!");
-    } else if (this.opposingCharacters.length === 0) {
-      console.log("You Win!");
-      initiateGame();
-      alert("You Win!");
+      setTimeout(() => alert("You Lose!"), 0);
     } else if (
       this.defendingCharacter.health <= 0 &&
       this.opposingCharacters.length !== 0
     ) {
-      console.log("test working");
       var remove = this.opposingCharacters.indexOf(this.defendingCharacterKey);
       this.opposingCharacters.splice(remove, 1);
       this.defendingCharacter = null;
       this.defendingCharacterKey = null;
       this.populateDefendingCharacter();
       this.populateOpposingCharactersList();
-      alert("Pick another opponent!");
+      if (
+        this.activeCharacter.health > 0 &&
+        this.opposingCharacters.length === 0
+      ) {
+        initiateGame();
+        setTimeout(() => alert("You Win!"), 0);
+      } else {
+        setTimeout(() => alert("Pick another opponent!"), 0);
+      }
     }
   }
 
@@ -153,7 +156,7 @@ class Game {
 
     if (this.defendingCharacterKey !== null) {
       $("#defender")
-        .append(`<div class='col-md-3 defender-character' style='border: 1px solid black; padding-top: 10px;' id='${
+        .append(`<div class='col-md-3 defender-character' style='border: 1px solid black; padding-top: 10px; margin-bottom: 20px;' id='${
         this.defendingCharacter.name
       }'>
       <p class="justify-content-center d-flex">${this.defendingCharacter.name.toString()}</p>
@@ -188,12 +191,15 @@ class Game {
 
   attack() {
     this.defendingCharacter.health -= this.activeCharacter.attackPower;
-    this.setDefeatedCharacter();
     this.upgradePower();
+    this.setDefeatedCharacter();
   }
 
   counterAttack() {
-    if (this.defendingCharacter !== null) {
+    if (
+      this.defendingCharacter !== null &&
+      this.defendingCharacter.health > 0
+    ) {
       this.activeCharacter.health -= this.defendingCharacter.counterPower;
       this.setDefeatedCharacter();
     }
